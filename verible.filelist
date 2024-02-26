@@ -1,0 +1,5 @@
+./hardware/user/components/int/rtl/int_entrywise_product.sv
+./hardware/user/components/int/rtl/int_multiply.sv
+./hardware/user/components/join2/join2.sv
+./hardware/user/components/matmul/rtl/simple_matmul.sv
+./hardware/user/components/register_array/register_array.sv
