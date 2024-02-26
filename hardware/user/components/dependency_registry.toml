@@ -1,0 +1,14 @@
+# HDL component dependency registry.
+#
+# Format:
+# "<component_group>/<component>": [<dependency_group_1>, <dependency_group_2>, ...]
+#
+# <component_group> refers to the name of the directory containing the component.sv
+
+# common
+'common/register_slice'=[]
+# int
+'int/int_multiply'=[]
+'int/int_entrywise'=['int']
+# matmul
+'matmul/simple_matmul'=["int"]
