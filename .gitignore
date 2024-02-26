@@ -1,0 +1,7 @@
+build/
+__pycache__/
+.vscode/
+.pytest_cache/
+.tox/
+UNKNOWN.egg-info/
+lqer-fpga.code-workspace
