@@ -27,8 +27,8 @@ class RegisterSliceTB(Testbench):
 async def check_rst(dut):
     tb = RegisterSliceTB(dut)
     data_in = tb.generate_inputs(random=False)
-    dut.data_in = data_in
-    dut.clk_en = 1
+    dut.data_in.value = data_in
+    dut.clk_en.value = 1
     await tb.reset()
     assert signal_integer(dut.data_out) == dut.RESET_VALUE, f"rst check failed at {get_sim_time('ns')}"
 
@@ -37,8 +37,8 @@ async def check_rst(dut):
 async def check_clk_en(dut):
     tb = RegisterSliceTB(dut)
     data_in = tb.generate_inputs(random=False)
-    dut.data_in = data_in
-    dut.clk_en = 0
+    dut.data_in.value = data_in
+    dut.clk_en.value = 0
     await tb.reset()
     await cc_triggers.RisingEdge(dut.clk)
     await cc_triggers.FallingEdge(dut.clk)
@@ -50,19 +50,19 @@ async def check_determined_data_in(dut):
     tb = RegisterSliceTB(dut)
     # test clk_en
     data_in = tb.generate_inputs(random=False)
-    dut.data_in = data_in
-    dut.clk_en = 1
+    dut.data_in.value = data_in
+    dut.clk_en.value = 1
     await tb.reset()
     # test data insert and remove (clk_en = 1)
     await cc_triggers.FallingEdge(dut.clk)
     assert signal_integer(dut.data_out) == tb.model(data_in), f"reg check failed (clk_en = 1) at {get_sim_time('ns')}"
     data_in = tb.DATA_MAX // 2
-    dut.data_in = data_in
+    dut.data_in.value = data_in
     await cc_triggers.FallingEdge(dut.clk)
     # test data insert and remove (clk_en = 1)
     assert signal_integer(dut.data_out) == tb.model(data_in), f"reg check failed (clk_en = 1) at {get_sim_time('ns')}"
-    dut.clk_en = 0
-    tb.data_in = tb.DATA_MAX
+    dut.clk_en.value = 0
+    dut.data_in.value = tb.DATA_MAX
     await cc_triggers.FallingEdge(dut.clk)
     # test data keep
     assert signal_integer(dut.data_out) == tb.model(data_in), f"reg check failed (clk_en = 0) at {get_sim_time('ns')}"
@@ -71,16 +71,16 @@ async def check_determined_data_in(dut):
 @cocotb.test()
 async def check_random_data_in(dut):
     tb = RegisterSliceTB(dut)
-    dut.clk_en = 1
+    dut.clk_en.value = 1
     await tb.reset()
     await cc_triggers.FallingEdge(dut.clk)
     data_in = tb.generate_inputs(random=True)
-    dut.data_in = data_in
+    dut.data_in.value = data_in
     for i in range(100):
         await cc_triggers.FallingEdge(dut.clk)
         assert signal_integer(dut.data_out) == tb.model(data_in), f"random check failed at {get_sim_time('ns')}"
         data_in = tb.generate_inputs(random=True)
-        dut.data_in = data_in
+        dut.data_in.value = data_in
 
 
 def generate_random_module_params():

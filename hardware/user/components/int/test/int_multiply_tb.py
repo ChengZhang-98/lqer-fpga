@@ -45,8 +45,8 @@ async def check_positive_times_positive(dut):
     tb = IntMultiplyTB(dut)
     a = tb.A_MAX // 2
     b = tb.B_MAX // 2
-    tb.dut.a = a
-    tb.dut.b = b
+    tb.dut.a.value = a
+    tb.dut.b.value = b
 
     await Timer(1, units="us")
     assert tb.dut.out.value.signed_integer == tb.model(a, b)
@@ -58,8 +58,8 @@ async def check_positive_times_negative(dut):
     a = tb.A_MAX // 2
     b = tb.B_MIN // 2
 
-    tb.dut.a = a
-    tb.dut.b = b
+    tb.dut.a.value = a
+    tb.dut.b.value = b
 
     await Timer(1, units="us")
     assert tb.dut.out.value.signed_integer == tb.model(a, b)
@@ -70,8 +70,8 @@ async def check_negative_times_negative(dut):
     tb = IntMultiplyTB(dut)
     a = tb.A_MIN // 2
     b = tb.B_MIN // 2
-    tb.dut.a = a
-    tb.dut.b = b
+    tb.dut.a.value = a
+    tb.dut.b.value = b
 
     await Timer(1, units="us")
     assert tb.dut.out.value.signed_integer == tb.model(a, b)
@@ -82,8 +82,8 @@ async def check_negative_times_positive(dut):
     tb = IntMultiplyTB(dut)
     a = tb.A_MIN // 2
     b = tb.B_MAX // 2
-    tb.dut.a = a
-    tb.dut.b = b
+    tb.dut.a.value = a
+    tb.dut.b.value = b
 
     await Timer(1, units="us")
     assert tb.dut.out.value.signed_integer == tb.model(a, b)
@@ -93,8 +93,8 @@ async def check_negative_times_positive(dut):
 async def check_random_multiply(dut):
     tb = IntMultiplyTB(dut)
     a, b = tb.generate_inputs(random=True)
-    tb.dut.a = a
-    tb.dut.b = b
+    tb.dut.a.value = a
+    tb.dut.b.value = b
 
     await Timer(1, units="us")
     assert tb.dut.out.value.signed_integer == tb.model(a, b)
@@ -105,8 +105,8 @@ async def check_repeated_random_multiply(dut):
     tb = IntMultiplyTB(dut)
     for _ in range(100):
         a, b = tb.generate_inputs(random=True)
-        tb.dut.a = a
-        tb.dut.b = b
+        tb.dut.a.value = a
+        tb.dut.b.value = b
         await Timer(1, units="us")
         assert tb.dut.out.value.signed_integer == tb.model(a, b)
 
