@@ -12,5 +12,5 @@ module int_multiply #(
     input logic signed [B_WIDTH-1:0] b,
     output logic signed [A_WIDTH+B_WIDTH-1:0] out
 );
-  assign out = a * b;
+    assign out = a * b;
 endmodule
