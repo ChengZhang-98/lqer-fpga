@@ -23,15 +23,14 @@ class Testbench:
     async def reset(self, active_high=True):
         if self.rst == None:
             raise Exception(
-                "Cannot reset. Either a reset wire was not provided or "
-                + "the module does not have a reset."
+                "Cannot reset. Either a reset wire was not provided or " + "the module does not have a reset."
             )
 
         await RisingEdge(self.clk)
         self.rst.value = 1 if active_high else 0
         await RisingEdge(self.clk)
         self.rst.value = 0 if active_high else 1
-        await RisingEdge(self.clk)
+        await FallingEdge(self.clk)
 
     def generate_inputs(self, random: bool):
         raise NotImplementedError
