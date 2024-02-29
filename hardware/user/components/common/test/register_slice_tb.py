@@ -30,6 +30,7 @@ async def check_rst(dut):
     dut.data_in.value = data_in
     dut.clk_en.value = 1
     await tb.reset()
+    tb.log_sim_time("check_rst reset")
     assert signal_integer(dut.data_out) == dut.RESET_VALUE, f"rst check failed at {get_sim_time('ns')}"
 
 
@@ -40,6 +41,7 @@ async def check_clk_en(dut):
     dut.data_in.value = data_in
     dut.clk_en.value = 0
     await tb.reset()
+    tb.log_sim_time("check_clk_en reset")
     await cc_triggers.RisingEdge(dut.clk)
     await cc_triggers.FallingEdge(dut.clk)
     assert signal_integer(dut.data_out) == dut.RESET_VALUE, f"clk_en check failed at {get_sim_time('ns')}"
@@ -53,6 +55,7 @@ async def check_determined_data_in(dut):
     dut.data_in.value = data_in
     dut.clk_en.value = 1
     await tb.reset()
+    tb.log_sim_time("check_determined_data_in reset")
     # test data insert and remove (clk_en = 1)
     await cc_triggers.FallingEdge(dut.clk)
     assert signal_integer(dut.data_out) == tb.model(data_in), f"reg check failed (clk_en = 1) at {get_sim_time('ns')}"
@@ -73,6 +76,7 @@ async def check_random_data_in(dut):
     tb = RegisterSliceTB(dut)
     dut.clk_en.value = 1
     await tb.reset()
+    tb.log_sim_time("check_random_data_in reset")
     await cc_triggers.FallingEdge(dut.clk)
     data_in = tb.generate_inputs(random=True)
     dut.data_in.value = data_in

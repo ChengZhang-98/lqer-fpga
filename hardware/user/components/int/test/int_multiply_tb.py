@@ -128,7 +128,7 @@ def pytest_int_multiply():
         {"A_WIDTH": 4, "B_WIDTH": 4},
         {"A_WIDTH": 4, "B_WIDTH": 8},
     ]
-    for i in range(5):
+    for _ in range(5):
         model_param_list.append(generate_random_widths())
     lqer_runner(
         module_param_list=model_param_list,
