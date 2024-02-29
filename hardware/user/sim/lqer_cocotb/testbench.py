@@ -1,6 +1,8 @@
 import cocotb
 from cocotb.triggers import *
 from cocotb.clock import Clock
+from cocotb.log import SimLog
+from cocotb.utils import get_sim_time
 
 
 class Testbench:
@@ -8,6 +10,8 @@ class Testbench:
         self.dut = dut
         self.clk = clk
         self.rst = rst
+
+        self.logger = SimLog(f"lqer_cocotb.{type(self).__qualname__}")
 
         self.input_drivers = []
         self.output_monitors = []
@@ -34,3 +38,6 @@ class Testbench:
 
     def generate_inputs(self, random: bool):
         raise NotImplementedError
+
+    def log_sim_time(self, msg: str):
+        self.logger.info(f"{get_sim_time('ns')} ns: {msg}")

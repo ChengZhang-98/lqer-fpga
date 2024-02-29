@@ -1,7 +1,6 @@
 import random
 import numpy as np
 from cocotb.binary import BinaryValue
-from cocotb.result import TestFailure
 from cocotb.triggers import *
 
 from .driver import Driver
@@ -23,19 +22,19 @@ class StreamDriver(Driver):
 
     async def _driver_send(self, data) -> None:
         while True:
-            await RisingEdge(self.clk)
-            self.data.value = data
+            await FallingEdge(self.clk)
             if random.random() > self.valid_prob:
                 self.valid.value = 0
                 continue  # Try roll random valid again at next clock
+            self.data.value = data
             self.valid.value = 1
             await ReadOnly()
             if self.ready.value == 1:
-                self.log.debug("Sent %s" % data)
+                self.logger.debug(f"Sent {data}")
                 break
 
         if self.send_queue.empty():
-            await RisingEdge(self.clk)
+            await FallingEdge(self.clk)
             self.valid.value = 0
 
 
@@ -60,6 +59,6 @@ class StreamMonitor(Monitor):
             raise ValueError(f"Data type not supported: {type(self.data.value)}")
 
     def _check(self, got, exp):
-        if self.check:
-            if not np.equal(got, exp).all():
-                raise TestFailure("\nGot \n%s, \nExpected \n%s" % (got, exp))
+        if not self.check:
+            return
+        assert np.equal(got, exp).all(), f"Got \n{got}, \nExpected \n{exp}"

@@ -15,7 +15,7 @@ class Driver:
         self.send_queue = Queue()
 
         if not hasattr(self, "log"):
-            self.log = SimLog("cocotb.driver.%s" % (type(self).__qualname__))
+            self.logger = SimLog(f"lqer_cocotb.driver.{(type(self).__qualname__)}")
 
         # Create an independent coroutine which can send stuff
         self._thread = cocotb.start_soon(self._send_thread())
@@ -47,7 +47,7 @@ class Driver:
 
     def load_driver(self, tensor):
         for beat in tensor:
-            self.log.info(f"Loaded beat {beat} to driver {self.__class__.__name__}")
+            self.logger.info(f"Loaded beat {beat} to driver {self.__class__.__name__}")
             self.append(beat)
 
     @coroutine
@@ -65,9 +65,7 @@ class Driver:
         await self._driver_send(transaction)
 
     async def _driver_send(self, transaction: Any) -> None:
-        raise NotImplementedError(
-            "Sub-classes of Driver should define a _driver_send coroutine"
-        )
+        raise NotImplementedError("Sub-classes of Driver should define a _driver_send coroutine")
 
 
 async def bit_driver(signal, clk, prob):

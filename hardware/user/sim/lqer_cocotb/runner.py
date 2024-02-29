@@ -4,8 +4,6 @@ import shutil
 import re
 import logging
 import inspect
-from typing import Any
-import torch
 import toml
 
 from cocotb.runner import get_runner, get_results
@@ -17,9 +15,7 @@ logger = logging.getLogger(__name__)
 LQER_COMPONENT_DIR = Path(__file__).parents[2] / "components"
 LQER_COMPONENT_DEPENDENCY_TOML = LQER_COMPONENT_DIR / "dependency_registry.toml"
 assert LQER_COMPONENT_DIR.exists(), f"Invalid component directory: {LQER_COMPONENT_DIR}"
-assert (
-    LQER_COMPONENT_DEPENDENCY_TOML.exists()
-), f"Invalid dependency registry: {LQER_COMPONENT_DEPENDENCY_TOML}"
+assert LQER_COMPONENT_DEPENDENCY_TOML.exists(), f"Invalid dependency registry: {LQER_COMPONENT_DEPENDENCY_TOML}"
 with open(LQER_COMPONENT_DEPENDENCY_TOML, "r") as f:
     LQER_COMPONENT_DEPENDENCY = toml.load(f)
 
@@ -29,7 +25,6 @@ def lqer_runner(
     extra_build_args: list[str] = [],
     trace: bool = False,
     seed: int = None,
-    build_jobs: int = 8,
 ):
     assert isinstance(module_param_list, list)
 
@@ -93,8 +88,6 @@ def lqer_runner(
                 "--trace",
                 # "-trace-depth",
                 "-O0",
-                "-build-jobs",
-                f"{build_jobs}",
                 "-Wno-fatal",
                 "-Wno-lint",
                 "-Wno-style",
@@ -104,13 +97,13 @@ def lqer_runner(
             build_dir=test_build_dir,
         )
 
-        runner.test(
+        results_xml = runner.test(
             hdl_toplevel=module,
             test_module=testbench_path.stem,
             seed=seed,
             results_xml=f"results.xml",
         )
-        num_tests, num_fails = get_results(test_build_dir / "results.xml")
+        num_tests, num_fails = get_results(results_xml)
         total_tests += num_tests
         total_fails += num_fails
 

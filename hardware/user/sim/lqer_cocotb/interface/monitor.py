@@ -2,7 +2,7 @@ from queue import Queue
 
 import cocotb
 from cocotb.log import SimLog
-from cocotb.triggers import RisingEdge
+from cocotb.triggers import RisingEdge, FallingEdge
 from cocotb.result import TestFailure
 
 
@@ -16,7 +16,7 @@ class Monitor:
         self.check = check
 
         if not hasattr(self, "log"):
-            self.log = SimLog("cocotb.monitor.%s" % (type(self).__qualname__))
+            self.logger = SimLog(f"lqer_cocotb.monitor.{(type(self).__qualname__)}")
 
         self._thread = cocotb.start_soon(self._recv_thread())
 
@@ -30,17 +30,13 @@ class Monitor:
 
     async def _recv_thread(self):
         while True:
-            await RisingEdge(self.clk)
+            await FallingEdge(self.clk)
             if self._trigger():
                 tr = self._recv()
-                self.log.info(f"Observed output beat {tr}")
+                self.logger.debug(f"Observed output beat {tr}")
                 self.recv_queue.put(tr)
 
-                if self.exp_queue.empty():
-                    raise TestFailure(
-                        "\nGot \n%s,\nbut we did not expect anything."
-                        % self.recv_queue.get()
-                    )
+                assert not self.exp_queue.empty(), f"\nGot \n{self.recv_queue.get()},\nbut we did not expect anything."
 
                 self._check(self.recv_queue.get(), self.exp_queue.get())
 
@@ -58,5 +54,5 @@ class Monitor:
 
     def load_monitor(self, tensor):
         for beat in tensor:
-            self.log.info(f"Expecting output beat {beat}")
+            self.logger.info(f"Expecting output beat {beat}")
             self.expect(beat)
