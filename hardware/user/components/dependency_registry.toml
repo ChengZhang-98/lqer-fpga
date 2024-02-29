@@ -7,8 +7,9 @@
 
 # common
 'common/register_slice'=[]
+'common/skid_buffer'   =['common']
 # int
-'int/int_multiply'=[]
+'int/int_multiply' =[]
 'int/int_entrywise'=['int']
 # matmul
 'matmul/simple_matmul'=["int"]
