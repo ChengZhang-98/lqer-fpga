@@ -1,17 +1,13 @@
 import logging
 from random import randint
-import math
-import copy
 
-import numpy as np
-import torch
 import cocotb
-from cocotb.triggers import *
+import cocotb.triggers as cc_triggers
+from cocotb.utils import get_sim_time
 
 from lqer_cocotb.testbench import Testbench
-from lqer_cocotb.interface.streaming import StreamDriver, StreamMonitor
-from lqer_cocotb.quantize import quantize_to_fixed_point
 from lqer_cocotb.runner import lqer_runner
+from lqer_cocotb.utils import signal_signed_integer
 
 logger = logging.getLogger(f"lqer_cocotb.{__name__}")
 
@@ -40,6 +36,10 @@ class IntMultiplyTB(Testbench):
         return a * b
 
 
+def check_msg(msg: str) -> str:
+    return f"{msg} failed at {get_sim_time('us')} us"
+
+
 @cocotb.test()
 async def check_positive_times_positive(dut):
     tb = IntMultiplyTB(dut)
@@ -48,8 +48,8 @@ async def check_positive_times_positive(dut):
     tb.dut.a.value = a
     tb.dut.b.value = b
 
-    await Timer(1, units="us")
-    assert tb.dut.out.value.signed_integer == tb.model(a, b)
+    await cc_triggers.Timer(1, "us")
+    assert signal_signed_integer(dut.out) == tb.model(a, b), check_msg("check_positive_times_positive")
 
 
 @cocotb.test()
@@ -61,8 +61,8 @@ async def check_positive_times_negative(dut):
     tb.dut.a.value = a
     tb.dut.b.value = b
 
-    await Timer(1, units="us")
-    assert tb.dut.out.value.signed_integer == tb.model(a, b)
+    await cc_triggers.Timer(1, "us")
+    assert signal_signed_integer(dut.out) == tb.model(a, b), check_msg("check_positive_times_negative")
 
 
 @cocotb.test()
@@ -73,8 +73,8 @@ async def check_negative_times_negative(dut):
     tb.dut.a.value = a
     tb.dut.b.value = b
 
-    await Timer(1, units="us")
-    assert tb.dut.out.value.signed_integer == tb.model(a, b)
+    await cc_triggers.Timer(1, "us")
+    assert signal_signed_integer(dut.out) == tb.model(a, b), check_msg("check_negative_times_negative")
 
 
 @cocotb.test()
@@ -85,8 +85,8 @@ async def check_negative_times_positive(dut):
     tb.dut.a.value = a
     tb.dut.b.value = b
 
-    await Timer(1, units="us")
-    assert tb.dut.out.value.signed_integer == tb.model(a, b)
+    await cc_triggers.Timer(1, "us")
+    assert signal_signed_integer(dut.out) == tb.model(a, b), check_msg("check_negative_times_positive")
 
 
 @cocotb.test()
@@ -96,19 +96,20 @@ async def check_random_multiply(dut):
     tb.dut.a.value = a
     tb.dut.b.value = b
 
-    await Timer(1, units="us")
-    assert tb.dut.out.value.signed_integer == tb.model(a, b)
+    await cc_triggers.Timer(1, "us")
+    assert signal_signed_integer(dut.out) == tb.model(a, b), check_msg("check_random_multiply")
 
 
 @cocotb.test()
 async def check_repeated_random_multiply(dut):
+    NUM_ITERATIONS = 100
     tb = IntMultiplyTB(dut)
-    for _ in range(100):
+    for _ in range(NUM_ITERATIONS):
         a, b = tb.generate_inputs(random=True)
         tb.dut.a.value = a
         tb.dut.b.value = b
-        await Timer(1, units="us")
-        assert tb.dut.out.value.signed_integer == tb.model(a, b)
+        await cc_triggers.Timer(1, "us")
+        assert signal_signed_integer(dut.out) == tb.model(a, b), check_msg("check_repeated_random_multiply")
 
 
 def generate_random_widths():
@@ -121,17 +122,18 @@ def generate_random_widths():
 
 
 def pytest_int_multiply():
-    model_param_list = [
+    NUM_RANDOM_TESTS = 5
+    module_param_list = [
         {"A_WIDTH": 4, "B_WIDTH": 4},
         {"A_WIDTH": 4, "B_WIDTH": 8},
         {"A_WIDTH": 2, "B_WIDTH": 4},
         {"A_WIDTH": 4, "B_WIDTH": 4},
         {"A_WIDTH": 4, "B_WIDTH": 8},
     ]
-    for _ in range(5):
-        model_param_list.append(generate_random_widths())
+    for _ in range(NUM_RANDOM_TESTS):
+        module_param_list.append(generate_random_widths())
     lqer_runner(
-        module_param_list=model_param_list,
+        module_param_list=module_param_list,
     )
 
 

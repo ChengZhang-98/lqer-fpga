@@ -5,11 +5,9 @@
 #
 # <component_group> refers to the name of the directory containing the component.sv
 
-# common
-'common/register_slice'=[]
-'common/skid_buffer'   =['common']
-# int
-'int/int_multiply' =[]
-'int/int_entrywise'=['int']
-# matmul
-'matmul/simple_matmul'=["int"]
+'common/join2'             =[]
+'common/register_slice'    =[]
+'common/skid_buffer'       =['common']
+'int/int_entrywise_product'=['common', 'int']
+'int/int_multiply'         =[]
+'matmul/simple_matmul'     =["int"]

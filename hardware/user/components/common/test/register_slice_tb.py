@@ -93,6 +93,7 @@ def generate_random_module_params():
 
 
 def pytest_register_slice():
+    NUM_RANDOM_TESTS = 5
     module_param_list = [
         {"DATA_WIDTH": 1, "RESET_VALUE": 0},
         {"DATA_WIDTH": 1, "RESET_VALUE": 1},
@@ -100,7 +101,7 @@ def pytest_register_slice():
         {"DATA_WIDTH": 8, "RESET_VALUE": 255},
     ]
 
-    for _ in range(5):
+    for _ in range(NUM_RANDOM_TESTS):
         module_param_list.append(generate_random_module_params())
 
     lqer_runner(module_param_list)

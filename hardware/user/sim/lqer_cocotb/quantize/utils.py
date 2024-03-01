@@ -3,7 +3,7 @@ import torch
 import numpy as np
 
 
-def clamp(
+def lqer_clamp(
     value: int | float | np.ndarray | torch.Tensor,
     min_value: int | float,
     max_value: int | float,
@@ -29,7 +29,7 @@ def clamp(
         raise TypeError(f"Unsupported type: {type(value)}")
 
 
-def round(
+def lqer_round(
     value: int | float | np.ndarray | torch.Tensor,
     rounding: str = "round",
 ) -> int | float | np.ndarray | torch.Tensor:
@@ -42,7 +42,7 @@ def round(
     value: The value to be rounded.
     rounding: The rounding method. It can be one of the following:
 
-        - "round": Round to the nearest integer.
+        - "round" | "nearest": Round to the nearest integer.
         - "floor": Round towards negative infinity.
         - "ceil": Round towards positive infinity.
         - "trunc": Round towards zero.
@@ -50,7 +50,7 @@ def round(
     Returns:
         The rounded value.
     """
-    if rounding == "round":
+    if rounding in ["round", "nearest"]:
         if isinstance(value, (int, float)):
             return int(value + math.copysign(0.5, value))
         elif isinstance(value, np.ndarray):
@@ -88,3 +88,16 @@ def round(
             raise TypeError(f"Unsupported type: {type(value)}")
     else:
         raise ValueError(f"Unsupported rounding method: {rounding}")
+
+
+def lqer_cast_to_int(x: int | float | np.ndarray | torch.Tensor):
+    if isinstance(x, int):
+        return x
+    elif isinstance(x, float):
+        return round(x)
+    elif isinstance(x, np.ndarray):
+        return x.astype(int)
+    elif isinstance(x, torch.Tensor):
+        return x.int()
+    else:
+        raise TypeError(f"Unsupported type: {type(x)}")

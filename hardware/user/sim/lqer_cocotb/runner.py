@@ -110,7 +110,7 @@ def lqer_runner(
     logger.info("Test Summary")
     logger.info(f"    PASSED / TOTAL: {total_tests - total_fails} / {total_tests}")
     if total_fails > 0:
-        logger.warning(f"    FAILED / TOTAL: {total_fails} / {total_tests}")
+        logger.error(f"    FAILED / TOTAL: {total_fails} / {total_tests}")
     else:
         logger.info(f"    FAILED / TOTAL: {total_fails} / {total_tests}")
 

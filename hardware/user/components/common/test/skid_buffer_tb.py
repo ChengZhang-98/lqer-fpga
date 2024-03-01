@@ -21,7 +21,9 @@ class SkidBufferTB(Testbench):
 
         if enable_driver:
             self.input_driver = StreamDriver(dut.clk, dut.data_in, dut.valid_in, dut.ready_in)
-            self.output_monitor = StreamMonitor(dut.clk, dut.data_out, dut.valid_out, dut.ready_out)
+            self.output_monitor = StreamMonitor(
+                dut.clk, dut.data_out, dut.valid_out, dut.ready_out, check_fmt="unsigned_integer"
+            )
 
     def generate_inputs(self, random: bool):
         if not random:
@@ -59,14 +61,14 @@ async def check_control_path(dut):
     Empty - load -> Busy - flow -> Busy - fill -> Full [- dump -> Full - pass -> Full] - flush -> Busy - flow -> Busy - unload -> Empty
 
     ```txt
-                    /--\ +- flow
+                    /--\  +- flow
                     |  |
             load   |  v   fill
-    -------   +    ------   +    ------        (CBM)
-    |       | ---> |      | ---> |      | ---\ +  dump
-    | Empty |      | Busy |      | Full |    |   or
-    |       | <--- |      | <--- |      | <--/ +- pass
-    -------    -   ------    -   ------
+     -------   +    ------   +    ------         (CBM)
+    |       | ---> |      | ---> |      | ---\  +  dump
+    | Empty |      | Busy |      | Full |    |    or
+    |       | <--- |      | <--- |      | <--/  +- pass
+     -------    -   ------    -   ------
             unload         flush
     ```
     """
@@ -150,7 +152,7 @@ async def check_data_path_no_back_pressure(dut):
         tb.input_driver.append(data_in)
         tb.output_monitor.expect(expect_out)
 
-    await cc_triggers.Timer(100, units="us")
+    await cc_triggers.Timer(NUM_TRANSACTIONS, units="us")
     assert tb.output_monitor.exp_queue.empty()
 
 
@@ -196,11 +198,12 @@ async def check_data_path_back_pressure_no_CBM(dut):
         expect_out = tb.model(data_in)
         tb.input_driver.append(data_in)
         tb.output_monitor.expect(expect_out)
-    await cc_triggers.Timer(100, units="us")
+    await cc_triggers.Timer(NUM_ITERATIONS, units="us")
     assert tb.output_monitor.exp_queue.empty()
 
 
 def pytest_skid_buffer():
+    NUM_RANDOM_TESTS = 10
     param_list = [
         {"DATA_WIDTH": 1, "CIRCULAR_BUFFER_MODE": 0},
         {"DATA_WIDTH": 1, "CIRCULAR_BUFFER_MODE": 1},
@@ -208,7 +211,7 @@ def pytest_skid_buffer():
         {"DATA_WIDTH": 8, "CIRCULAR_BUFFER_MODE": 1},
     ]
 
-    for _ in range(10):
+    for _ in range(NUM_RANDOM_TESTS):
         param_list.append(generate_random_data_widths() | {"CIRCULAR_BUFFER_MODE": 0})
         param_list.append(generate_random_data_widths() | {"CIRCULAR_BUFFER_MODE": 1})
 

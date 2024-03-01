@@ -5,3 +5,4 @@ __pycache__/
 .tox/
 UNKNOWN.egg-info/
 lqer-fpga.code-workspace
+prj/

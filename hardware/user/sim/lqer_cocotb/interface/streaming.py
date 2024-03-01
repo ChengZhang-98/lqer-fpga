@@ -1,10 +1,12 @@
 import random
 import numpy as np
 from cocotb.binary import BinaryValue
-from cocotb.triggers import *
+
+import cocotb.triggers as cc_triggers
 
 from .driver import Driver
 from .monitor import Monitor
+from .utils import binary_value_to_binstr, binary_value_to_integer, binary_value_to_signed_integer
 
 
 class StreamDriver(Driver):
@@ -22,39 +24,52 @@ class StreamDriver(Driver):
 
     async def _driver_send(self, data) -> None:
         while True:
-            await FallingEdge(self.clk)
+            await cc_triggers.FallingEdge(self.clk)
             if random.random() > self.valid_prob:
                 self.valid.value = 0
                 continue  # Try roll random valid again at next clock
             self.data.value = data
             self.valid.value = 1
-            await ReadOnly()
+            await cc_triggers.ReadOnly()
             if self.ready.value == 1:
                 self.logger.debug(f"Sent {data}")
                 break
 
         if self.send_queue.empty():
-            await FallingEdge(self.clk)
+            await cc_triggers.FallingEdge(self.clk)
             self.valid.value = 0
 
 
 class StreamMonitor(Monitor):
-    def __init__(self, clk, data, valid, ready, check=True):
-        super().__init__(clk)
+    def __init__(self, clk, data, valid, ready, check=True, check_fmt="signed_integer"):
+        super().__init__(clk, check=check)
         self.clk = clk
         self.data = data
         self.valid = valid
         self.ready = ready
-        self.check = check
+
+        assert check_fmt in ["binstr", "integer", "unsigned_integer", "signed_integer"]
+        self.check_fmt = check_fmt
+
+    def _value_to_check(self, value):
+        match self.check_fmt:
+            case "binstr":
+                return binary_value_to_binstr(value)
+            case "integer" | "unsigned_integer":
+                return binary_value_to_integer(value)
+            case "signed_integer":
+                return binary_value_to_signed_integer(value)
+            case _:
+                raise ValueError(f"Invalid check_fmt: {self.check_fmt}")
 
     def _trigger(self):
         return self.valid.value == 1 and self.ready.value == 1
 
     def _recv(self):
         if type(self.data.value) == list:
-            return [int(x) for x in self.data.value]
+            return [self._value_to_check(x) for x in self.data.value]
         elif type(self.data.value) == BinaryValue:
-            return int(self.data.value)
+            return self._value_to_check(self.data.value)
         else:
             raise ValueError(f"Data type not supported: {type(self.data.value)}")
 
