@@ -89,7 +89,7 @@ async def check_random_inputs_no_back_pressure(dut):
 
 
 @cocotb.test()
-async def check_determined_inputs_no_back_pressure(dut):
+async def check_determined_inputs_with_back_pressure(dut):
     NUM_ITERATIONS = 100
     tb = IntEntrywiseProductTB(dut)
     tb.data_in_a_driver.set_valid_prob(0.8)
@@ -105,7 +105,27 @@ async def check_determined_inputs_no_back_pressure(dut):
         tb.data_out_monitor.expect(exp_out)
 
     await cc_triggers.Timer(NUM_ITERATIONS, "us")
-    assert tb.data_out_monitor.exp_queue.empty(), check_msg("check_determined_inputs_no_back_pressure")
+    assert tb.data_out_monitor.exp_queue.empty(), check_msg("check_determined_inputs_with_back_pressure")
+
+
+@cocotb.test()
+async def check_random_inputs_with_back_pressure(dut):
+    NUM_ITERATIONS = 100
+    tb = IntEntrywiseProductTB(dut)
+    tb.data_in_a_driver.set_valid_prob(0.8)
+    tb.data_in_b_driver.set_valid_prob(0.8)
+    cocotb.start_soon(bit_driver(tb.data_out_monitor.ready, clk=dut.clk, prob=0.5))
+
+    for _ in range(NUM_ITERATIONS):
+        inputs = tb.generate_inputs(random=True)
+        tb.data_in_a_driver.append(inputs["data_in_a"])
+        tb.data_in_b_driver.append(inputs["data_in_b"])
+
+        exp_out = tb.model(**inputs)
+        tb.data_out_monitor.expect(exp_out)
+
+    await cc_triggers.Timer(NUM_ITERATIONS, "us")
+    assert tb.data_out_monitor.exp_queue.empty(), check_msg("check_random_inputs_with_back_pressure")
 
 
 def generate_random_module_params():

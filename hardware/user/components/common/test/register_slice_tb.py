@@ -73,6 +73,7 @@ async def check_determined_data_in(dut):
 
 @cocotb.test()
 async def check_random_data_in(dut):
+    NUM_ITERATIONS = 100
     tb = RegisterSliceTB(dut)
     dut.clk_en.value = 1
     await tb.reset()
@@ -80,7 +81,7 @@ async def check_random_data_in(dut):
     await cc_triggers.FallingEdge(dut.clk)
     data_in = tb.generate_inputs(random=True)
     dut.data_in.value = data_in
-    for i in range(100):
+    for i in range(NUM_ITERATIONS):
         await cc_triggers.FallingEdge(dut.clk)
         assert signal_integer(dut.data_out) == tb.model(data_in), f"random check failed at {get_sim_time('ns')}"
         data_in = tb.generate_inputs(random=True)
