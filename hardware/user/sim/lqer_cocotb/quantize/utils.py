@@ -90,7 +90,7 @@ def lqer_round(
         raise ValueError(f"Unsupported rounding method: {rounding}")
 
 
-def lqer_cast_to_int(x: int | float | np.ndarray | torch.Tensor):
+def lqer_type_as_int(x: int | float | np.ndarray | torch.Tensor):
     if isinstance(x, int):
         return x
     elif isinstance(x, float):

@@ -1,4 +1,4 @@
-from .utils import lqer_clamp, lqer_round, lqer_cast_to_int
+from .utils import lqer_clamp, lqer_round, lqer_type_as_int
 import numpy as np
 import torch
 
@@ -28,5 +28,5 @@ def quantize_to_fixed_point(
 
     x = lqer_round(x * 2**frac_width, rounding=rounding)
     x = lqer_clamp(x, min_val, max_val)
-    x = lqer_cast_to_int(x)
+    x = lqer_type_as_int(x)
     return x
