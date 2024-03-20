@@ -1,8 +1,9 @@
-`timescale 1us / 1ps
 /*
   Module:       register_slice
   Description:  A register array holding DATA_WIDTH bits. When clk_en is 0, output RESET_VALUE.
 */
+
+`include "timescale.svh"
 
 module register_slice #(
     parameter int DATA_WIDTH  = 1,
@@ -21,9 +22,11 @@ module register_slice #(
     logic [DATA_WIDTH-1:0] data_reg, data_next;
 
     initial begin
+        // verilator lint_off WIDTHEXPAND
         // verilator lint_off WIDTHTRUNC
         data_reg = RESET_VALUE;
         // verilator lint_on WIDTHTRUNC
+        // verilator lint_on WIDTHEXPAND
     end
 
     // next state logic
@@ -36,11 +39,13 @@ module register_slice #(
     end
 
     // register state transfer
-    always_ff @(posedge clk) begin
+    always @(posedge clk) begin
         if (rst) begin
+            // verilator lint_off WIDTHEXPAND
             // verilator lint_off WIDTHTRUNC
             data_reg <= RESET_VALUE;
             // verilator lint_on WIDTHTRUNC
+            // verilator lint_on WIDTHEXPAND
         end else begin
             data_reg <= data_next;
         end

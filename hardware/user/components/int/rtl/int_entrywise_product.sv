@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 /*
 Module:         int_entrywise_product
 Description:    Entrywise (elementwise) product of two input fixed-point arrays a and b.
@@ -8,6 +7,9 @@ Parameters:
                 B_WIDTH:        The width of the input array b elements.
                 A_DIM_0_B_DIM_0: The number of elements in the input array a, (= the number of elements in the input array b)
 */
+
+`include "timescale.svh"
+
 module int_entrywise_product #(
     parameter  int A_WIDTH         = 8,
     parameter  int B_WIDTH         = 8,

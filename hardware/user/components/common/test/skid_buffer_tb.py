@@ -4,7 +4,7 @@ from cocotb import triggers as cc_triggers
 from cocotb.utils import get_sim_time
 from lqer_cocotb import Testbench, lqer_runner
 from lqer_cocotb.interface import StreamDriver, StreamMonitor, bit_driver
-from lqer_cocotb.utils import signal_integer
+from lqer_cocotb.utils import signal_int, signal_uint
 
 
 class SkidBufferTB(Testbench):
@@ -49,7 +49,7 @@ async def check_rst(dut):
     tb = SkidBufferTB(dut, enable_driver=False)
     dut.ready_in.value = 1
     await tb.reset()
-    assert signal_integer(dut.state_cur) == tb.EMPTY, check_msg("rst")
+    assert signal_int(dut.state_cur) == tb.EMPTY, check_msg("rst")
 
 
 @cocotb.test()
@@ -79,62 +79,62 @@ async def check_control_path(dut):
     await tb.reset()
     tb.log_sim_time("check_control_path reset")
     # load
-    assert signal_integer(dut.load) == 1, check_msg("data path state 'load'")
+    assert signal_uint(dut.load) == 1, check_msg("data path state 'load'")
     # EMPTY -> BUSY
     await cc_triggers.FallingEdge(dut.clk)
-    assert signal_integer(dut.state_cur) == tb.BUSY, check_msg("FSM state 'BUSY'")
+    assert signal_uint(dut.state_cur) == tb.BUSY, check_msg("FSM state 'BUSY'")
     # flow
-    assert signal_integer(dut.flow) == 1, check_msg("data path state 'flow'")
+    assert signal_uint(dut.flow) == 1, check_msg("data path state 'flow'")
     # BUSY -> BUSY
     await cc_triggers.FallingEdge(dut.clk)
-    assert signal_integer(dut.state_cur) == tb.BUSY, check_msg("FSM state 'BUSY'")
+    assert signal_uint(dut.state_cur) == tb.BUSY, check_msg("FSM state 'BUSY'")
     # fill
     dut.ready_out.value = 0
     await cc_triggers.ReadOnly()
-    assert signal_integer(dut.fill) == 1, check_msg("data path state 'fill'")
+    assert signal_uint(dut.fill) == 1, check_msg("data path state 'fill'")
     # BUSY -> FULL
     await cc_triggers.FallingEdge(dut.clk)
-    assert signal_integer(dut.state_cur) == tb.FULL, check_msg("FSM state 'FULL'")
+    assert signal_uint(dut.state_cur) == tb.FULL, check_msg("FSM state 'FULL'")
     if tb.CIRCULAR_BUFFER_MODE:
         # dump
-        assert signal_integer(dut.dump) == 1, check_msg("data path state 'dump'")
+        assert signal_uint(dut.dump) == 1, check_msg("data path state 'dump'")
         # FULL -> FULL
         await cc_triggers.FallingEdge(dut.clk)
-        assert signal_integer(dut.state_cur) == tb.FULL, check_msg("FSM state 'FULL'")
+        assert signal_uint(dut.state_cur) == tb.FULL, check_msg("FSM state 'FULL'")
         "Now valid_in should still be 1"
         dut.ready_out.value = 1
         await cc_triggers.ReadOnly()
         # pass
-        assert signal_integer(getattr(dut, "pass")) == 1, check_msg("data path state 'pass'")
+        assert signal_uint(getattr(dut, "pass")) == 1, check_msg("data path state 'pass'")
         # FULL -> FULL
         await cc_triggers.FallingEdge(dut.clk)
-        assert signal_integer(dut.state_cur) == tb.FULL, check_msg("FSM state 'FULL'")
+        assert signal_uint(dut.state_cur) == tb.FULL, check_msg("FSM state 'FULL'")
     else:
         "Now valid_in should be 0"
     dut.valid_in.value = 0
     dut.ready_out.value = 1
     # flush
     await cc_triggers.ReadOnly()
-    assert signal_integer(dut.flush) == 1, check_msg("data path state 'flush'")
+    assert signal_uint(dut.flush) == 1, check_msg("data path state 'flush'")
     # FULL -> BUSY
     await cc_triggers.FallingEdge(dut.clk)
-    assert signal_integer(dut.state_cur) == tb.BUSY, check_msg("FSM state 'BUSY'")
+    assert signal_uint(dut.state_cur) == tb.BUSY, check_msg("FSM state 'BUSY'")
     dut.valid_in.value = 1
     dut.ready_out.value = 1
     # fill
     await cc_triggers.ReadOnly()
-    assert signal_integer(dut.flow) == 1, check_msg("data path state 'flow'")
+    assert signal_uint(dut.flow) == 1, check_msg("data path state 'flow'")
     # BUSY -> BUSY
     await cc_triggers.FallingEdge(dut.clk)
-    assert signal_integer(dut.state_cur) == tb.BUSY, check_msg("FSM state 'BUSY'")
+    assert signal_uint(dut.state_cur) == tb.BUSY, check_msg("FSM state 'BUSY'")
     dut.valid_in.value = 0
     dut.ready_out.value = 1
     # unload
     await cc_triggers.ReadOnly()
-    assert signal_integer(dut.unload) == 1, check_msg("data path state 'unload'")
+    assert signal_uint(dut.unload) == 1, check_msg("data path state 'unload'")
     # BUSY -> EMPTY
     await cc_triggers.FallingEdge(dut.clk)
-    assert signal_integer(dut.state_cur) == tb.EMPTY, check_msg("FSM state 'EMPTY'")
+    assert signal_uint(dut.state_cur) == tb.EMPTY, check_msg("FSM state 'EMPTY'")
 
 
 @cocotb.test()
@@ -152,7 +152,7 @@ async def check_data_path_no_back_pressure(dut):
         tb.input_driver.append(data_in)
         tb.output_monitor.expect(expect_out)
 
-    await cc_triggers.Timer(NUM_TRANSACTIONS, units="us")
+    await cc_triggers.Timer(NUM_TRANSACTIONS * 1e3, units="step")
     assert tb.output_monitor.exp_queue.empty()
 
 
@@ -170,13 +170,13 @@ async def check_data_path_CBM(dut):
     if tb.CIRCULAR_BUFFER_MODE:
         await cc_triggers.FallingEdge(dut.clk)  # BUSY
         await cc_triggers.FallingEdge(dut.clk)  # FULL
-        assert signal_integer(dut.state_cur) == tb.FULL, check_msg("FSM state 'FULL'")
-        assert signal_integer(dut.data_out) == data_in_0, check_msg("data path 'data_out'")
+        assert signal_uint(dut.state_cur) == tb.FULL, check_msg("FSM state 'FULL'")
+        assert signal_uint(dut.data_out) == data_in_0, check_msg("data path 'data_out'")
         data_in_1 = tb.generate_inputs(random=True)
         dut.data_in.value = data_in_1
         await cc_triggers.FallingEdge(dut.clk)
-        assert signal_integer(dut.data_out) == data_in_0
-        assert signal_integer(dut.data_buffer_out) == data_in_1
+        assert signal_uint(dut.data_out) == data_in_0
+        assert signal_uint(dut.data_buffer_out) == data_in_1
     else:
         tb.log_sim_time("Skip check_data_path_circular_buffer_mode (CIRCULAR_BUFFER_MODEl==0)")
         pass
@@ -198,7 +198,7 @@ async def check_data_path_back_pressure_no_CBM(dut):
         expect_out = tb.model(data_in)
         tb.input_driver.append(data_in)
         tb.output_monitor.expect(expect_out)
-    await cc_triggers.Timer(NUM_ITERATIONS, units="us")
+    await cc_triggers.Timer(NUM_ITERATIONS * 1e3, units="step")
     assert tb.output_monitor.exp_queue.empty()
 
 

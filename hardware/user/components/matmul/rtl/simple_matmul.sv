@@ -8,8 +8,7 @@ Description :This module does a matrix multiply of two input matrices a and b, a
              Python equivalent: out = a @ b
 */
 
-
-`timescale 1ns / 1ps
+`include "timescale.svh"
 
 module simple_matmul #(
     // Dimensions

@@ -1,5 +1,3 @@
-`timescale 1ns / 1ps
-
 /*
     Module:         skid_buffer
     Description:    pipeline register
@@ -30,6 +28,8 @@
     -------    -   ------    -   ------
             unload         flush
 */
+
+`include "timescale.svh"
 
 module skid_buffer #(
     parameter int DATA_WIDTH           = 8,

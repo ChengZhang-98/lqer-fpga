@@ -63,7 +63,7 @@ async def check_determined_inputs_no_back_pressure(dut):
     exp_out = tb.model(**inputs)
     tb.data_out_monitor.expect(exp_out)
 
-    await cc_triggers.Timer(100, "us")
+    await cc_triggers.Timer(1e3, "step")
     assert tb.data_out_monitor.exp_queue.empty(), check_msg("check_determined_inputs_no_back_pressure")
 
 
@@ -84,7 +84,7 @@ async def check_random_inputs_no_back_pressure(dut):
         exp_out = tb.model(**inputs)
         tb.data_out_monitor.expect(exp_out)
 
-    await cc_triggers.Timer(NUM_ITERATIONS, "us")
+    await cc_triggers.Timer(NUM_ITERATIONS * 1e3, "step")
     assert tb.data_out_monitor.exp_queue.empty(), check_msg("check_random_inputs_no_back_pressure")
 
 
@@ -104,7 +104,7 @@ async def check_determined_inputs_with_back_pressure(dut):
         exp_out = tb.model(**inputs)
         tb.data_out_monitor.expect(exp_out)
 
-    await cc_triggers.Timer(NUM_ITERATIONS, "us")
+    await cc_triggers.Timer(NUM_ITERATIONS * 1e3, "step")
     assert tb.data_out_monitor.exp_queue.empty(), check_msg("check_determined_inputs_with_back_pressure")
 
 
@@ -124,7 +124,7 @@ async def check_random_inputs_with_back_pressure(dut):
         exp_out = tb.model(**inputs)
         tb.data_out_monitor.expect(exp_out)
 
-    await cc_triggers.Timer(NUM_ITERATIONS, "us")
+    await cc_triggers.Timer(NUM_ITERATIONS * 1e3, "step")
     assert tb.data_out_monitor.exp_queue.empty(), check_msg("check_random_inputs_with_back_pressure")
 
 
