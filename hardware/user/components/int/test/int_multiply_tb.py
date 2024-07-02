@@ -49,7 +49,9 @@ async def check_positive_times_positive(dut):
     tb.dut.b.value = b
 
     await cc_triggers.Timer(1e3, "step")
-    assert signal_int(dut.out) == tb.model(a, b), check_msg("check_positive_times_positive")
+    assert signal_int(dut.out) == tb.model(a, b), check_msg(
+        "check_positive_times_positive"
+    )
 
 
 @cocotb.test()
@@ -62,7 +64,9 @@ async def check_positive_times_negative(dut):
     tb.dut.b.value = b
 
     await cc_triggers.Timer(1e3, "step")
-    assert signal_int(dut.out) == tb.model(a, b), check_msg("check_positive_times_negative")
+    assert signal_int(dut.out) == tb.model(a, b), check_msg(
+        "check_positive_times_negative"
+    )
 
 
 @cocotb.test()
@@ -74,7 +78,9 @@ async def check_negative_times_negative(dut):
     tb.dut.b.value = b
 
     await cc_triggers.Timer(1e3, "step")
-    assert signal_int(dut.out) == tb.model(a, b), check_msg("check_negative_times_negative")
+    assert signal_int(dut.out) == tb.model(a, b), check_msg(
+        "check_negative_times_negative"
+    )
 
 
 @cocotb.test()
@@ -86,7 +92,9 @@ async def check_negative_times_positive(dut):
     tb.dut.b.value = b
 
     await cc_triggers.Timer(1e3, "step")
-    assert signal_int(dut.out) == tb.model(a, b), check_msg("check_negative_times_positive")
+    assert signal_int(dut.out) == tb.model(a, b), check_msg(
+        "check_negative_times_positive"
+    )
 
 
 @cocotb.test()
@@ -109,7 +117,9 @@ async def check_repeated_random_multiply(dut):
         tb.dut.a.value = a
         tb.dut.b.value = b
         await cc_triggers.Timer(1e3, "step")
-        assert signal_int(dut.out) == tb.model(a, b), check_msg("check_repeated_random_multiply")
+        assert signal_int(dut.out) == tb.model(a, b), check_msg(
+            "check_repeated_random_multiply"
+        )
 
 
 def generate_random_widths():
@@ -132,7 +142,7 @@ def pytest_int_multiply():
     ]
     for _ in range(NUM_RANDOM_TESTS):
         module_param_list.append(generate_random_widths())
-    lqer_runner(module_param_list=module_param_list, simulator="verilator")
+    lqer_runner(module_param_list=module_param_list, simulator="questa")
 
 
 if __name__ == "__main__":
