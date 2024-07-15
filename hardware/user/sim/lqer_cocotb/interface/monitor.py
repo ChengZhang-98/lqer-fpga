@@ -36,7 +36,9 @@ class Monitor:
                 self.logger.debug(f"Observed output beat {tr}")
                 self.recv_queue.put(tr)
 
-                assert not self.exp_queue.empty(), f"\nGot \n{self.recv_queue.get()},\nbut we did not expect anything."
+                assert (
+                    not self.exp_queue.empty()
+                ), f"\nGot \n{self.recv_queue.get()},\nbut we did not expect anything."
 
                 self._check(self.recv_queue.get(), self.exp_queue.get())
 

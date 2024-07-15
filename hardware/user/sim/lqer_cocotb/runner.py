@@ -12,12 +12,18 @@ from .utils import SimTimeScale
 logger = logging.getLogger(__name__)
 
 
-LQER_COMPONENT_DIR = Path(__file__).parents[2] / "components"
-LQER_COMPONENT_DEPENDENCY_TOML = LQER_COMPONENT_DIR / "dependency_registry.toml"
-LQER_COMPONENT_INCLUDES = LQER_COMPONENT_DIR / "includes"
+LQER_COMPONENT_DIR = Path(__file__).parents[2].joinpath("components").resolve()
+LQER_COMPONENT_DEPENDENCY_TOML = LQER_COMPONENT_DIR.joinpath(
+    "dependency_registry.toml"
+).resolve()
+LQER_COMPONENT_INCLUDES = LQER_COMPONENT_DIR.joinpath("includes").resolve()
 assert LQER_COMPONENT_DIR.exists(), f"Invalid component directory: {LQER_COMPONENT_DIR}"
-assert LQER_COMPONENT_DEPENDENCY_TOML.exists(), f"Invalid dependency registry: {LQER_COMPONENT_DEPENDENCY_TOML}"
-assert LQER_COMPONENT_INCLUDES.exists(), f"Invalid includes directory: {LQER_COMPONENT_INCLUDES}"
+assert (
+    LQER_COMPONENT_DEPENDENCY_TOML.exists()
+), f"Invalid dependency registry: {LQER_COMPONENT_DEPENDENCY_TOML}"
+assert (
+    LQER_COMPONENT_INCLUDES.exists()
+), f"Invalid includes directory: {LQER_COMPONENT_INCLUDES}"
 
 with open(LQER_COMPONENT_DEPENDENCY_TOML, "r") as f:
     LQER_COMPONENT_DEPENDENCY = toml.load(f)
@@ -48,13 +54,17 @@ def lqer_runner(
     extra_build_args: list[str] = [],
     waves: bool = True,
     seed: int = 42,
-    simulator: str = "verilator",
+    simulator: str = "questa",
 ):
     assert isinstance(module_param_list, list)
 
-    testbench_py = Path(inspect.stack()[1].filename)  # path to <module>_tb.py
+    testbench_py = Path(inspect.stack()[1].filename).resolve()  # path to <module>_tb.py
+    # print([x.filename for x in inspect.stack()])
+
     module_name = testbench_py.stem.removesuffix("_tb")
-    dut_sv = testbench_py.parents[1] / "rtl" / f"{testbench_py.stem.removesuffix('_tb')}.sv"  # path to <module>.sv
+    dut_sv = (
+        testbench_py.parents[1] / "rtl" / f"{testbench_py.stem.removesuffix('_tb')}.sv"
+    )  # path to <module>.sv
     assert dut_sv.exists(), f"Failed to find DUT at {dut_sv}"
     dut_entry = dut_sv.as_posix().removeprefix(LQER_COMPONENT_DIR.as_posix() + "/")
     sv_sources = solve_dependency(dut_entry)
@@ -84,6 +94,7 @@ def lqer_runner(
                 # str(default_sim_timescale),  # depends on cocotb version
                 *extra_build_args,
             ]
+            test_args = []
         case "icarus":
             build_args = [
                 # Simulation Optimisation
@@ -91,10 +102,12 @@ def lqer_runner(
                 module_name,
                 *extra_build_args,
             ]
-        # case "modelsim":
-        #     build_args = [
-        #         *extra_build_args,
-        #     ]
+            test_args = []
+        case "questa":
+            build_args = [
+                *extra_build_args,
+            ]
+            test_args = []
         case _:
             raise ValueError(f"Invalid simulator: {simulator}")
 
@@ -123,6 +136,7 @@ def lqer_runner(
             seed=seed,
             results_xml=f"results.xml",
             waves=waves,
+            test_args=test_args,
         )
         num_tests, num_fails = get_results(results_xml)
         total_tests += num_tests

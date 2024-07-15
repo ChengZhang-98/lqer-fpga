@@ -20,9 +20,15 @@ class SkidBufferTB(Testbench):
         self.FULL = 2
 
         if enable_driver:
-            self.input_driver = StreamDriver(dut.clk, dut.data_in, dut.valid_in, dut.ready_in)
+            self.input_driver = StreamDriver(
+                dut.clk, dut.data_in, dut.valid_in, dut.ready_in
+            )
             self.output_monitor = StreamMonitor(
-                dut.clk, dut.data_out, dut.valid_out, dut.ready_out, check_fmt="unsigned_integer"
+                dut.clk,
+                dut.data_out,
+                dut.valid_out,
+                dut.ready_out,
+                check_fmt="unsigned_integer",
             )
 
     def generate_inputs(self, random: bool):
@@ -54,7 +60,7 @@ async def check_rst(dut):
 
 @cocotb.test()
 async def check_control_path(dut):
-    """
+    r"""
     Check the control flow FSM states transfer of skid_buffer
 
     This test goes through the following states counterclockwise:
@@ -105,7 +111,9 @@ async def check_control_path(dut):
         dut.ready_out.value = 1
         await cc_triggers.ReadOnly()
         # pass
-        assert signal_uint(getattr(dut, "pass")) == 1, check_msg("data path state 'pass'")
+        assert signal_uint(getattr(dut, "pass")) == 1, check_msg(
+            "data path state 'pass'"
+        )
         # FULL -> FULL
         await cc_triggers.FallingEdge(dut.clk)
         assert signal_uint(dut.state_cur) == tb.FULL, check_msg("FSM state 'FULL'")
@@ -152,7 +160,7 @@ async def check_data_path_no_back_pressure(dut):
         tb.input_driver.append(data_in)
         tb.output_monitor.expect(expect_out)
 
-    await cc_triggers.Timer(NUM_TRANSACTIONS * 1e3, units="step")
+    await cc_triggers.Timer(NUM_TRANSACTIONS * 1e6, units="step")
     assert tb.output_monitor.exp_queue.empty()
 
 
@@ -178,7 +186,9 @@ async def check_data_path_CBM(dut):
         assert signal_uint(dut.data_out) == data_in_0
         assert signal_uint(dut.data_buffer_out) == data_in_1
     else:
-        tb.log_sim_time("Skip check_data_path_circular_buffer_mode (CIRCULAR_BUFFER_MODEl==0)")
+        tb.log_sim_time(
+            "Skip check_data_path_circular_buffer_mode (CIRCULAR_BUFFER_MODEl==0)"
+        )
         pass
 
 
@@ -198,7 +208,7 @@ async def check_data_path_back_pressure_no_CBM(dut):
         expect_out = tb.model(data_in)
         tb.input_driver.append(data_in)
         tb.output_monitor.expect(expect_out)
-    await cc_triggers.Timer(NUM_ITERATIONS * 1e3, units="step")
+    await cc_triggers.Timer(NUM_ITERATIONS * 1e6, units="step")
     assert tb.output_monitor.exp_queue.empty()
 
 
