@@ -1,6 +1,6 @@
 from random import randint
 from lqer_cocotb import Testbench, lqer_runner
-from lqer_cocotb.utils import signal_int
+from lqer_cocotb.utils import signal_uint
 import cocotb
 from cocotb import triggers as cc_triggers
 from cocotb.utils import get_sim_time
@@ -31,7 +31,9 @@ async def check_rst(dut):
     dut.clk_en.value = 1
     await tb.reset()
     tb.log_sim_time("check_rst reset")
-    assert signal_int(dut.data_out) == dut.RESET_VALUE, f"rst check failed at {get_sim_time('ns')}"
+    assert (
+        signal_uint(dut.data_out) == dut.RESET_VALUE
+    ), f"rst check failed at {get_sim_time('ns')}"
 
 
 @cocotb.test()
@@ -44,7 +46,9 @@ async def check_clk_en(dut):
     tb.log_sim_time("check_clk_en reset")
     await cc_triggers.RisingEdge(dut.clk)
     await cc_triggers.FallingEdge(dut.clk)
-    assert signal_int(dut.data_out) == dut.RESET_VALUE, f"clk_en check failed at {get_sim_time('ns')}"
+    assert (
+        signal_uint(dut.data_out) == dut.RESET_VALUE
+    ), f"clk_en check failed at {get_sim_time('ns')}"
 
 
 @cocotb.test()
@@ -58,17 +62,23 @@ async def check_determined_data_in(dut):
     tb.log_sim_time("check_determined_data_in reset")
     # test data insert and remove (clk_en = 1)
     await cc_triggers.FallingEdge(dut.clk)
-    assert signal_int(dut.data_out) == tb.model(data_in), f"reg check failed (clk_en = 1) at {get_sim_time('ns')}"
+    assert signal_uint(dut.data_out) == tb.model(
+        data_in
+    ), f"reg check failed (clk_en = 1) at {get_sim_time('ns')}"
     data_in = tb.DATA_MAX // 2
     dut.data_in.value = data_in
     await cc_triggers.FallingEdge(dut.clk)
     # test data insert and remove (clk_en = 1)
-    assert signal_int(dut.data_out) == tb.model(data_in), f"reg check failed (clk_en = 1) at {get_sim_time('ns')}"
+    assert signal_uint(dut.data_out) == tb.model(
+        data_in
+    ), f"reg check failed (clk_en = 1) at {get_sim_time('ns')}"
     dut.clk_en.value = 0
     dut.data_in.value = tb.DATA_MAX
     await cc_triggers.FallingEdge(dut.clk)
     # test data keep
-    assert signal_int(dut.data_out) == tb.model(data_in), f"reg check failed (clk_en = 0) at {get_sim_time('ns')}"
+    assert signal_uint(dut.data_out) == tb.model(
+        data_in
+    ), f"reg check failed (clk_en = 0) at {get_sim_time('ns')}"
 
 
 @cocotb.test()
@@ -83,7 +93,9 @@ async def check_random_data_in(dut):
     dut.data_in.value = data_in
     for i in range(NUM_ITERATIONS):
         await cc_triggers.FallingEdge(dut.clk)
-        assert signal_int(dut.data_out) == tb.model(data_in), f"random check failed at {get_sim_time('ns')}"
+        assert signal_uint(dut.data_out) == tb.model(
+            data_in
+        ), f"random check failed at {get_sim_time('ns')}"
         data_in = tb.generate_inputs(random=True)
         dut.data_in.value = data_in
 

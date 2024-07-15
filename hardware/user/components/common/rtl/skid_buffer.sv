@@ -46,7 +46,7 @@ module skid_buffer #(
     output logic                  valid_out,
     input  logic                  ready_out
 );
-    localparam bit [DATA_WIDTH-1:0] DataZero = {DATA_WIDTH{1'b0}};
+    localparam int DataZero = 0;
     /*
     Data path
         Registers:
@@ -95,12 +95,12 @@ module skid_buffer #(
     */
 
     // FSM
-    localparam int StateBits = 2;
-    typedef enum bit [StateBits-1:0] {
+    typedef enum int {
         EMPTY,
         BUSY,
         FULL
     } state_t;
+    localparam int StateBits = $clog2(FULL + 1);
 
     state_t state_cur, state_next;
     register_slice #(
@@ -110,8 +110,8 @@ module skid_buffer #(
         .clk     (clk),
         .clk_en  (1'b1),
         .rst     (rst),
-        .data_in (state_next),
-        .data_out(state_cur)
+        .data_in (state_next[StateBits-1:0]),
+        .data_out(state_cur[StateBits-1:0])
     );
 
     // handshake
@@ -165,7 +165,7 @@ module skid_buffer #(
     // ready_in is stored in a register
     register_slice #(
         .DATA_WIDTH (1),
-        .RESET_VALUE(1'b1)
+        .RESET_VALUE(1)
     ) ready_in_reg (
         .clk     (clk),
         .clk_en  (1'b1),
@@ -179,7 +179,7 @@ module skid_buffer #(
     logic valid_out_next;
     register_slice #(
         .DATA_WIDTH (1),
-        .RESET_VALUE(1'b0)
+        .RESET_VALUE(0)
     ) valid_out_reg (
         .clk     (clk),
         .clk_en  (1'b1),

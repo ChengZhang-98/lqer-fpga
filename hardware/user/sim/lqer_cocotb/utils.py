@@ -95,7 +95,9 @@ def unsigned_extend(value: int | ndarray | Tensor, bits: int) -> int | ndarray |
     return extended
 
 
-def signed_to_unsigned(value: int | ndarray | Tensor, bits: int) -> int | ndarray | Tensor:
+def signed_to_unsigned(
+    value: int | ndarray | Tensor, bits: int
+) -> int | ndarray | Tensor:
     if isinstance(value, torch.Tensor):
         assert value.dtype in [torch.int8, torch.int16, torch.int32, torch.int64]
     elif isinstance(value, np.ndarray):
@@ -118,16 +120,62 @@ def floor_rounding(value, in_frac_width, out_frac_width):
 # utils for handle signals
 
 
-def signal_uint(signal) -> int:
-    return signal.value.integer
+# def signal_uint(signal) -> int:
+#     match type(signal):
+#         case cc_handle.ModifiableObject:
+#             return signal.value.integer
+#         case cc_handle.EnumObject | cc_handle.IntegerObject:
+#             return signed_to_unsigned(signal.value)
+#         case _:
+#             raise TypeError(f"Unsupported type: {type(signal)}")
+def signal_uint(signal):
+    signal_value = signal.value
+    if isinstance(signal_value, int):
+        return signed_to_unsigned(signal_value, 64)
+    elif hasattr(signal_value, "integer"):
+        return signal_value.integer
+    else:
+        raise TypeError(f"Unsupported type: {type(signal)}")
 
 
-def signal_int(signal) -> int:
-    return signal.value.signed_integer
+# def signal_int(signal) -> int:
+#     match type(signal):
+#         case cc_handle.ModifiableObject:
+#             return signal.value.signed_integer
+#         case cc_handle.EnumObject | cc_handle.IntegerObject:
+#             return signal.value
+#         case _:
+#             raise TypeError(f"Unsupported type: {type(signal)}")
 
 
-def signal_binstr(signal) -> str:
-    return signal.value.binstr
+def signal_int(signal):
+    signal_value = signal.value
+    if isinstance(signal_value, int):
+        return signal_value
+    elif hasattr(signal_value, "signed_integer"):
+        return signal_value.signed_integer
+    else:
+        raise TypeError(f"Unsupported type: {type(signal)}")
+
+
+# def signal_binstr(signal) -> str:
+#     match type(signal):
+#         case cc_handle.ModifiableObject:
+#             return signal.value.binstr
+#         case cc_handle.EnumObject | cc_handle.IntegerObject:
+#             return bin(signal.value)[2:]
+#         case _:
+#             raise TypeError(f"Unsupported type: {type(signal)}")
+
+
+def signal_binstr(signal):
+    signal_value = signal.value
+    if isinstance(signal_value, int):
+        return bin(signal_value)[2:]
+    elif hasattr(signal_value, "binstr"):
+        return signal_value.binstr
+    else:
+        raise TypeError(f"Unsupported type: {type(signal)}")
 
 
 def array1d_uint(signal) -> list[int]:

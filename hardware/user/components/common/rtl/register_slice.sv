@@ -22,11 +22,7 @@ module register_slice #(
     logic [DATA_WIDTH-1:0] data_reg, data_next;
 
     initial begin
-        // verilator lint_off WIDTHEXPAND
-        // verilator lint_off WIDTHTRUNC
-        data_reg = RESET_VALUE;
-        // verilator lint_on WIDTHTRUNC
-        // verilator lint_on WIDTHEXPAND
+        data_reg = RESET_VALUE[DATA_WIDTH-1:0];
     end
 
     // next state logic

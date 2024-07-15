@@ -54,11 +54,13 @@ def lqer_runner(
     extra_build_args: list[str] = [],
     waves: bool = True,
     seed: int = 42,
-    simulator: str = "verilator",
+    simulator: str = "questa",
 ):
     assert isinstance(module_param_list, list)
 
-    testbench_py = Path(inspect.stack()[1].filename)  # path to <module>_tb.py
+    testbench_py = Path(inspect.stack()[1].filename).resolve()  # path to <module>_tb.py
+    # print([x.filename for x in inspect.stack()])
+
     module_name = testbench_py.stem.removesuffix("_tb")
     dut_sv = (
         testbench_py.parents[1] / "rtl" / f"{testbench_py.stem.removesuffix('_tb')}.sv"
@@ -92,6 +94,7 @@ def lqer_runner(
                 # str(default_sim_timescale),  # depends on cocotb version
                 *extra_build_args,
             ]
+            test_args = []
         case "icarus":
             build_args = [
                 # Simulation Optimisation
@@ -99,10 +102,12 @@ def lqer_runner(
                 module_name,
                 *extra_build_args,
             ]
+            test_args = []
         case "questa":
             build_args = [
                 *extra_build_args,
             ]
+            test_args = []
         case _:
             raise ValueError(f"Invalid simulator: {simulator}")
 
@@ -131,6 +136,7 @@ def lqer_runner(
             seed=seed,
             results_xml=f"results.xml",
             waves=waves,
+            test_args=test_args,
         )
         num_tests, num_fails = get_results(results_xml)
         total_tests += num_tests

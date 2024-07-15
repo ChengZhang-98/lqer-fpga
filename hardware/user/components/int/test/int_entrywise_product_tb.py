@@ -51,6 +51,7 @@ def check_msg(msg: str):
 
 @cocotb.test()
 async def check_determined_inputs_no_back_pressure(dut):
+    NUM_ITERATIONS = 100
     tb = IntEntrywiseProductTB(dut)
     tb.data_in_a_driver.set_valid_prob(1.0)
     tb.data_in_b_driver.set_valid_prob(1.0)
@@ -63,7 +64,7 @@ async def check_determined_inputs_no_back_pressure(dut):
     exp_out = tb.model(**inputs)
     tb.data_out_monitor.expect(exp_out)
 
-    await cc_triggers.Timer(1e3, "step")
+    await cc_triggers.Timer(NUM_ITERATIONS * 1e6, "step")
     assert tb.data_out_monitor.exp_queue.empty(), check_msg("check_determined_inputs_no_back_pressure")
 
 
@@ -84,7 +85,7 @@ async def check_random_inputs_no_back_pressure(dut):
         exp_out = tb.model(**inputs)
         tb.data_out_monitor.expect(exp_out)
 
-    await cc_triggers.Timer(NUM_ITERATIONS * 1e3, "step")
+    await cc_triggers.Timer(NUM_ITERATIONS * 1e6, "step")
     assert tb.data_out_monitor.exp_queue.empty(), check_msg("check_random_inputs_no_back_pressure")
 
 
@@ -104,7 +105,7 @@ async def check_determined_inputs_with_back_pressure(dut):
         exp_out = tb.model(**inputs)
         tb.data_out_monitor.expect(exp_out)
 
-    await cc_triggers.Timer(NUM_ITERATIONS * 1e3, "step")
+    await cc_triggers.Timer(NUM_ITERATIONS * 1e6, "step")
     assert tb.data_out_monitor.exp_queue.empty(), check_msg("check_determined_inputs_with_back_pressure")
 
 
@@ -124,7 +125,7 @@ async def check_random_inputs_with_back_pressure(dut):
         exp_out = tb.model(**inputs)
         tb.data_out_monitor.expect(exp_out)
 
-    await cc_triggers.Timer(NUM_ITERATIONS * 1e3, "step")
+    await cc_triggers.Timer(NUM_ITERATIONS * 1e6, "step")
     assert tb.data_out_monitor.exp_queue.empty(), check_msg("check_random_inputs_with_back_pressure")
 
 

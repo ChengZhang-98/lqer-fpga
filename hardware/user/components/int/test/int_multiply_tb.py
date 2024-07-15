@@ -142,7 +142,7 @@ def pytest_int_multiply():
     ]
     for _ in range(NUM_RANDOM_TESTS):
         module_param_list.append(generate_random_widths())
-    lqer_runner(module_param_list=module_param_list, simulator="questa")
+    lqer_runner(module_param_list=module_param_list)
 
 
 if __name__ == "__main__":
